@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Catatan Sederhana</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #5cb85c;
+        }
+
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+
+        .note-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .note-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 5px solid #5cb85c;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .note-text {
+            color: #444;
+            font-size: 14px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            flex: 1;
+            padding-right: 10px;
+        }
+
+        .delete-btn {
+            background: none;
+            color: #ff5c5c;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+            font-weight: bold;
+        }
+
+        .delete-btn:hover {
+            color: #d9534f;
+            background: none;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Catatan Saya</h2>
+    
+    <div class="input-section">
+        <textarea id="noteInput" placeholder="Tulis catatan baru di sini..."></textarea>
+        <button onclick="addNote()">Tambah Catatan</button>
+    </div>
+
+    <ul id="noteList" class="note-list"></ul>
+</div>
+
+<script>
+    // Memuat catatan saat halaman pertama kali dibuka
+    document.addEventListener("DOMContentLoaded", loadNotes);
+
+    function addNote() {
+        const noteInput = document.getElementById("noteInput");
+        const noteText = noteInput.value.trim();
+
+        if (noteText === "") {
+            alert("Catatan tidak boleh kosong!");
+            return;
+        }
+
+        let notes = getNotesFromStorage();
+        notes.push(noteText);
+        localStorage.setItem("notes", JSON.stringify(notes));
+
+        noteInput.value = "";
+        renderNotes();
+    }
+
+    function deleteNote(index) {
+        let notes = getNotesFromStorage();
+        notes.splice(index, 1);
+        localStorage.setItem("notes", JSON.stringify(notes));
+        renderNotes();
+    }
+
+    function getNotesFromStorage() {
+        const notes = localStorage.getItem("notes");
+        return notes ? JSON.parse(notes) : [];
+    }
+
+    function loadNotes() {
+        renderNotes();
+    }
+
+    function renderNotes() {
+        const noteList = document.getElementById("noteList");
+        noteList.innerHTML = "";
+        
+        const notes = getNotesFromStorage();
+
+        if (notes.length === 0) {
+            noteList.innerHTML = '<li class="empty-message">Belum ada catatan.</li>';
+            return;
+        }
+
+        notes.forEach((note, index) => {
+            const li = document.createElement("li");
+            li.className = "note-item";
+
+            li.innerHTML = `
+                <div class="note-text">${escapeHtml(note)}</div>
+                <button class="delete-btn" onclick="deleteNote(${index})">&times;</button>
+            `;
+
+            noteList.appendChild(li);
+        });
+    }
+
+    // Fungsi pengaman untuk menghindari masalah karakter khusus HTML
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+</script>
+
+</body>
+</html>
